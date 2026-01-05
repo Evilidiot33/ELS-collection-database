@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基坑工程案例库 (在线版)</title>
+    <script src="data.js"></script> 
+    <style>
+        /* ... 保持之前的 V6.0 CSS 样式不变 ... */
+        /* 为了节省篇幅，这里省略 CSS，请直接复制上一次 V6.0 的 Style 标签内容到这里 */
+        /* 记得把 V6.0 的 <style>...</style> 全部复制过来 */
+        :root { --primary: #2c3e50; --accent: #2980b9; --bg: #f4f7f9; --diff-bg: #fff3e0; --sol-bg: #e8f5e9; }
+        body { font-family: "Segoe UI", "Microsoft YaHei", sans-serif; background-color: var(--bg); color: #333; padding: 20px; line-height: 1.5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { color: var(--primary); margin: 0; font-size: 24px; }
+        .header p { color: #7f8c8d; font-size: 14px; margin-top: 5px; }
+        .filter-panel { background: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; position: sticky; top: 10px; z-index: 100; border: 1px solid #e1e1e1; }
+        .filter-row-top { display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px; align-items: center; }
+        .search-box { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 15px; }
+        .view-toggle { display: flex; gap: 5px; margin-left: 15px; }
+        .view-btn { padding: 6px 12px; border: 1px solid #ddd; background: #f9f9f9; cursor: pointer; border-radius: 4px; font-size: 13px; }
+        .view-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+        .filter-row-advanced { display: flex; gap: 10px; flex-wrap: wrap; }
+        .filter-select { padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; min-width: 110px; }
+        .result-count { margin-left: auto; font-weight: bold; color: var(--accent); font-size: 0.9em; align-self: center;}
+        .grid-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 20px; }
+        .card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-top: 4px solid var(--accent); display: flex; flex-direction: column; transition: transform 0.2s; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
+        .title-group { display: flex; flex-direction: column; }
+        .id-badge { font-size: 0.75em; color: #999; font-weight: bold; }
+        .title { font-weight: bold; font-size: 1.1em; color: var(--primary); }
+        .precision-badge { font-size: 0.75em; padding: 2px 8px; border-radius: 12px; font-weight: bold; margin-left: auto; margin-right: 10px; display: flex; align-items: center; gap: 4px; cursor: help;}
+        .prec-high { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+        .prec-mid { background: #fff8e1; color: #f57f17; border: 1px solid #ffe082; }
+        .prec-low { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
+        .tags { margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 5px; }
+        .tag { font-size: 0.75em; padding: 3px 8px; border-radius: 4px; background: #eaf2f8; color: var(--accent); }
+        .tag-city { background: #34495e; color: white; }
+        .data-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 8px 15px; background: #f8f9fa; padding: 12px; border-radius: 6px; font-size: 0.9em; margin-bottom: 12px; }
+        .data-item { display: flex; flex-direction: column; }
+        .data-item.full { grid-column: span 2; }
+        .label { color: #888; font-size: 0.85em; margin-bottom: 2px; }
+        .value { color: #333; font-weight: 600; }
+        .value-hl { color: #d35400; }
+        .narrative-box { margin-top: auto; display: flex; flex-direction: column; gap: 8px; font-size: 0.85em; }
+        .narrative-item { padding: 8px 10px; border-radius: 4px; display: flex; gap: 8px; }
+        .n-diff { background-color: var(--diff-bg); border-left: 3px solid #ff9800; }
+        .n-sol { background-color: var(--sol-bg); border-left: 3px solid #4caf50; }
+        .icon { min-width: 16px; font-weight: bold; }
+        .calc { border-bottom: 1px dashed #f39c12; background: #fef9e7; cursor: help; }
+        .missing { color: #ccc; font-style: italic; }
+        .table-view { display: none; overflow-x: auto; background: white; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; min-width: 1100px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 0.9em; vertical-align: top; }
+        th { background: #f1f4f6; position: sticky; top: 0; font-weight: bold; color: var(--primary); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>📚 基坑工程案例库 (在线版)</h1>
+        <p>数据源自: data.js | 实时读取</p>
+    </div>
+
+    <div class="filter-panel">
+        <div class="filter-row-top">
+            <input type="text" id="searchInput" class="search-box" placeholder="搜索关键词..." onkeyup="applyFilters()">
+            <div class="view-toggle">
+                <button class="view-btn active" onclick="switchView('grid')" id="btnGrid">卡片</button>
+                <button class="view-btn" onclick="switchView('table')" id="btnTable">列表</button>
+            </div>
+        </div>
+        <div class="filter-row-advanced">
+            <select id="filterPrec" class="filter-select" onchange="applyFilters()">
+                <option value="all">🚦 全部信度</option>
+                <option value="High">🟢 High</option>
+                <option value="Mid">🟡 Mid</option>
+                <option value="Low">🔴 Low</option>
+            </select>
+            <select id="filterDepth" class="filter-select" onchange="applyFilters()">
+                <option value="all">📉 全部深度</option>
+                <option value="12">12m 以下</option>
+                <option value="20">12m - 20m</option>
+                <option value="30">20m - 30m</option>
+                <option value="super">30m 以上</option>
+            </select>
+            <div class="result-count" id="resultCount">读取中...</div>
+        </div>
+    </div>
+
+    <div id="gridView" class="grid-view"></div>
+    <div id="tableView" class="table-view">
+        <table>
+            <thead>
+                <tr>
+                    <th width="18%">项目名称</th>
+                    <th width="8%">信度</th>
+                    <th width="8%">面积</th>
+                    <th width="10%">开挖/墙深</th>
+                    <th width="8%">插入比</th>
+                    <th width="20%">支撑体系</th>
+                    <th width="10%">变形</th>
+                    <th width="18%">难点与对策</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // 注意：这里不再包含 const cases = [...]，而是直接使用 data.js 里的变量
+    
+    // === 解析与渲染逻辑 (V6.0逻辑保持不变) ===
+    function parseNum(str) { const m = str ? str.match(/[\d\.]+/g) : null; return m ? parseFloat(m[0]) : 0; }
+    function fmt(val) { return val ? val.replace(/(\[.*?\])/g, '<span class="calc" title="来源">$1</span>') : '<span class="missing">-</span>'; }
+
+    function applyFilters() {
+        // 检查 data.js 是否加载成功
+        if (typeof cases === 'undefined') {
+            document.getElementById('gridView').innerHTML = '<div style="text-align:center;color:red">错误：未找到 data.js 数据文件。请确保 data.js 与 index.html 在同一目录下。</div>';
+            return;
+        }
+
+        const key = document.getElementById('searchInput').value.toLowerCase();
+        const fPrec = document.getElementById('filterPrec').value;
+        const fDepth = document.getElementById('filterDepth').value;
+
+        const res = cases.filter(item => {
+            const txt = (item.name + item.tags.join('') + JSON.stringify(item.data)).toLowerCase();
+            if (!txt.includes(key)) return false;
+            if (fPrec !== 'all' && item.precision_level !== fPrec) return false;
+            
+            const d = parseNum(item.data.depth);
+            if (fDepth === '12' && d >= 12) return false;
+            if (fDepth === '20' && (d < 12 || d > 20)) return false;
+            if (fDepth === '30' && (d <= 20 || d > 30)) return false;
+            if (fDepth === 'super' && d <= 30) return false;
+
+            return true;
+        });
+        render(res);
+    }
+
+    function render(data) {
+        document.getElementById('resultCount').innerText = `匹配: ${data.length}`;
+        const grid = document.getElementById('gridView');
+        const tbody = document.getElementById('tableBody');
+        grid.innerHTML = ''; tbody.innerHTML = '';
+
+        if(data.length === 0) { grid.innerHTML = '<div style="text-align:center;color:#999;padding:40px;">无匹配项</div>'; return; }
+
+        data.forEach(item => {
+            let pCls = item.precision_level === 'High' ? 'prec-high' : item.precision_level === 'Mid' ? 'prec-mid' : 'prec-low';
+            let pIcon = item.precision_level === 'High' ? '🟢' : item.precision_level === 'Mid' ? '🟡' : '🔴';
+            
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="title-group"><span class="id-badge">CASE ${item.id}</span><span class="title">${item.name}</span></div>
+                    <div class="precision-badge ${pCls}">${item.precision_level}</div>
+                    <span style="font-size:0.8em;color:#999;">${item.page_range}</span>
+                </div>
+                <div class="tags"><span class="tag tag-city">${item.city}</span>${item.tags.map(t=>`<span class="tag">#${t}</span>`).join('')}</div>
+                <div class="data-grid">
+                    <div class="data-item"><span class="label">📐 面积/深度</span><span class="value">${fmt(item.data.area)} / ${item.data.depth}</span></div>
+                    <div class="data-item"><span class="label">🧱 插入比</span><span class="value-hl">${fmt(item.data.ratio)}</span></div>
+                    <div class="data-item full"><span class="label">🛡️ 围护 & 支撑</span><span class="value" style="font-weight:normal;font-size:0.9em">${item.data.wall} <br> ${item.data.system}</span></div>
+                    <div class="data-item"><span class="label">📏 变形</span><span class="value-hl">${fmt(item.data.deformation)}</span></div>
+                    <div class="data-item"><span class="label">💪 加固</span><span class="value" style="font-size:0.85em">${fmt(item.data.reinforcement)}</span></div>
+                </div>
+                <div class="narrative-box">
+                    <div class="narrative-item n-diff"><span class="icon">⚠️</span><span>${item.narrative.difficulty}</span></div>
+                    <div class="narrative-item n-sol"><span class="icon">💡</span><span>${item.narrative.solution}</span></div>
+                </div>
+            `;
+            grid.appendChild(card);
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><b>${item.name}</b><br><span style="color:#999;font-size:0.8em">${item.page_range}</span></td>
+                <td>${pIcon} ${item.precision_level}</td>
+                <td>${fmt(item.data.area)}</td>
+                <td>${item.data.depth}<br><span style="color:#999;font-size:0.8em">墙:${parseNum(item.data.wall)}m</span></td>
+                <td style="color:#d35400;font-weight:bold">${fmt(item.data.ratio)}</td>
+                <td style="font-size:0.85em">${item.data.system}</td>
+                <td>${fmt(item.data.deformation)}</td>
+                <td style="font-size:0.85em">⚠️ ${item.narrative.difficulty}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function switchView(v) {
+        document.getElementById('gridView').style.display = v === 'grid' ? 'grid' : 'none';
+        document.getElementById('tableView').style.display = v === 'table' ? 'block' : 'none';
+        document.getElementById('btnGrid').className = v === 'grid' ? 'view-btn active' : 'view-btn';
+        document.getElementById('btnTable').className = v === 'table' ? 'view-btn active' : 'view-btn';
+    }
+
+    // 页面加载后执行
+    window.onload = applyFilters;
+</script>
+</body>
+</html>
